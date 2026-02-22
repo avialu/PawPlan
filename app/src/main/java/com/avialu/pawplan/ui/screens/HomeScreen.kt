@@ -8,6 +8,11 @@ import com.avialu.pawplan.ui.navigation.Routes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.avialu.pawplan.ui.viewmodel.ProfileViewModel
+
 @Composable
 fun HomeScreen(navController: NavController) {
     Column {
@@ -22,4 +27,8 @@ fun HomeScreen(navController: NavController) {
             Text("Logout")
         }
     }
+    val vm: ProfileViewModel = viewModel()
+    val user by vm.user.collectAsState()
+
+    Text("Hello ${user?.displayName}")
 }

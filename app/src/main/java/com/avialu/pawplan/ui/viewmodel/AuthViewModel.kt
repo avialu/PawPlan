@@ -3,6 +3,7 @@ package com.avialu.pawplan.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.avialu.pawplan.data.auth.AuthRepository
+import com.avialu.pawplan.data.user.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ data class AuthUiState(
 class AuthViewModel(
     private val repo: AuthRepository = AuthRepository()
 ) : ViewModel() {
-
+    private val userRepository = UserRepository()
     private val _state = MutableStateFlow(AuthUiState(isLoggedIn = repo.currentUid() != null))
     val state: StateFlow<AuthUiState> = _state
 
@@ -32,6 +33,7 @@ class AuthViewModel(
         _state.value = s.copy(isLoading = true, error = null)
         try {
             repo.signIn(s.email.trim(), s.password)
+            userRepository.ensureUserProfileExists()
             _state.value = _state.value.copy(isLoading = false, isLoggedIn = true)
         } catch (e: Exception) {
             _state.value = _state.value.copy(isLoading = false, error = e.message ?: "Sign in failed")
@@ -43,6 +45,7 @@ class AuthViewModel(
         _state.value = s.copy(isLoading = true, error = null)
         try {
             repo.signUp(s.email.trim(), s.password, s.displayName.trim())
+            userRepository.ensureUserProfileExists()
             _state.value = _state.value.copy(isLoading = false, isLoggedIn = true)
         } catch (e: Exception) {
             _state.value = _state.value.copy(isLoading = false, error = e.message ?: "Sign up failed")
