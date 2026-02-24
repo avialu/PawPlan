@@ -8,5 +8,7 @@ data class Pet(
     val birthYear: Int? = null,
     val photoUrl: String? = null,
     val createdAt: Long = 0L,
-    val createdBy: String = ""
+    val createdBy: String = "",
+    val lastActivityType: String? = null,
+    val lastActivityAt: Long? = null
 )

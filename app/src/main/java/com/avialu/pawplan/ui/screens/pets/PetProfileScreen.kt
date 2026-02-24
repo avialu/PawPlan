@@ -12,23 +12,31 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.avialu.pawplan.ui.navigation.PetsRoutes
+import com.avialu.pawplan.ui.viewmodel.PetActivitiesViewModel
 import com.avialu.pawplan.ui.viewmodel.PetProfileViewModel
 import com.avialu.pawplan.ui.viewmodel.ProfileViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun PetProfileScreen(
     navController: NavController,
     petId: String,
     vm: PetProfileViewModel = viewModel(),
+    activitiesVm: PetActivitiesViewModel = viewModel(),
     profileVm: ProfileViewModel = viewModel()
 ) {
     val user by profileVm.user.collectAsState()
     val householdId = user?.activeHouseholdId
+
     val state by vm.state.collectAsState()
+    val activitiesState by activitiesVm.state.collectAsState()
 
     LaunchedEffect(householdId, petId) {
         if (!householdId.isNullOrBlank()) {
             vm.load(householdId, petId)
+            activitiesVm.bind(householdId, petId)
         }
     }
 
@@ -65,8 +73,38 @@ fun PetProfileScreen(
         }
 
         Spacer(Modifier.height(8.dp))
+        Button(onClick = { navController.navigate(PetsRoutes.addActivity(petId)) }) {
+            Text("Add Activity")
+        }
+
+        Spacer(Modifier.height(8.dp))
         Button(onClick = { vm.delete(householdId, petId) }, enabled = !state.isLoading) {
             Text(if (state.isLoading) "Deleting..." else "Delete")
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // -------------------------
+        // Activities list
+        // -------------------------
+        Text("Activities")
+        Spacer(Modifier.height(8.dp))
+
+        activitiesState.error?.let { Text("Error: $it") }
+
+        if (activitiesState.activities.isEmpty()) {
+            Text("No activities yet")
+        } else {
+            val fmt = remember { SimpleDateFormat("dd/MM HH:mm", Locale.getDefault()) }
+
+            activitiesState.activities.forEach { a ->
+                val whenText = fmt.format(Date(a.timestamp))
+                val noteText = a.note?.takeIf { it.isNotBlank() }
+
+                Spacer(Modifier.height(8.dp))
+                Text("• ${a.type} — $whenText")
+                if (noteText != null) Text("  $noteText")
+            }
         }
     }
 }

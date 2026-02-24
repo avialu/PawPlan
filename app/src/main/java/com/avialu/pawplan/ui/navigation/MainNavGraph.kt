@@ -16,6 +16,7 @@ import com.avialu.pawplan.ui.screens.pets.AddPetScreen
 import com.avialu.pawplan.ui.screens.pets.EditPetScreen
 import com.avialu.pawplan.ui.screens.pets.PetProfileScreen
 import com.avialu.pawplan.ui.screens.pets.PetsScreen
+import com.avialu.pawplan.ui.screens.pets.AddActivityScreen
 
 @Composable
 fun MainNavGraph(rootNavController: NavController) {
@@ -52,6 +53,14 @@ fun MainNavGraph(rootNavController: NavController) {
             ) { backStack ->
                 val petId = backStack.arguments?.getString("petId")!!
                 PetProfileScreen(navController = navController, petId = petId)
+            }
+
+            composable(
+                route = PetsRoutes.ADD_ACTIVITY,
+                arguments = listOf(navArgument("petId") { type = NavType.StringType })
+            ) { backStack ->
+                val petId = backStack.arguments?.getString("petId")!!
+                AddActivityScreen(navController = navController, petId = petId)
             }
 
             // Pets edit
