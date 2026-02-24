@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.avialu.pawplan.ui.screens.HomeScreen
+import com.avialu.pawplan.ui.screens.main.HomeScreen
 import com.avialu.pawplan.ui.screens.LoginScreen
 import com.avialu.pawplan.ui.screens.OnboardingScreen
 import com.avialu.pawplan.ui.screens.SplashScreen
@@ -21,5 +21,7 @@ fun AppRoot() {
         composable(Routes.LOGIN) { LoginScreen(navController) }
         composable(Routes.ONBOARDING) { OnboardingScreen(navController) }
         composable(Routes.HOME) { HomeScreen(navController) }
-    }
+        composable(Routes.HOME) {
+            MainNavGraph(navController)
+        }    }
 }
