@@ -9,17 +9,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-data class HomeState(
+data class HomeDashboardState(
     val pets: List<Pet> = emptyList(),
     val error: String? = null
 )
 
-class HomeViewModel(
+class HomeDashboardViewModel(
     private val repo: PetsRepository = PetsRepository()
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(HomeState())
-    val state: StateFlow<HomeState> = _state
+    private val _state = MutableStateFlow(HomeDashboardState())
+    val state: StateFlow<HomeDashboardState> = _state
 
     private var boundHouseholdId: String? = null
 
@@ -28,9 +28,7 @@ class HomeViewModel(
         boundHouseholdId = householdId
 
         repo.observePets(householdId)
-            .onEach { list ->
-                _state.value = _state.value.copy(pets = list)
-            }
+            .onEach { list -> _state.value = _state.value.copy(pets = list) }
             .launchIn(viewModelScope)
     }
 }

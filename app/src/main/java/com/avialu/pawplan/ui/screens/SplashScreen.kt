@@ -1,10 +1,7 @@
 package com.avialu.pawplan.ui.screens
 
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.avialu.pawplan.data.firebase.FirebaseProvider
@@ -22,8 +19,7 @@ fun SplashScreen(
         val dest = when {
             FirebaseProvider.auth.currentUser == null -> Routes.LOGIN
             user == null -> null // עדיין טוענים פרופיל
-            user?.activeHouseholdId.isNullOrBlank() -> Routes.ONBOARDING
-            else -> Routes.HOME
+            else -> Routes.HOME // ✅ תמיד נכנסים ל-Main, גם בלי household
         }
 
         if (dest != null) {

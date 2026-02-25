@@ -3,6 +3,9 @@ package com.avialu.pawplan.data.household
 import com.avialu.pawplan.data.firebase.FirebaseProvider
 import com.avialu.pawplan.data.models.Household
 import com.avialu.pawplan.data.models.HouseholdMember
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import kotlin.random.Random
 
@@ -61,6 +64,17 @@ class HouseholdRepository {
 
         // IMPORTANT: return the join code (so we can display it)
         return joinCode
+    }
+
+    fun observeHousehold(householdId: String): Flow<Household?> = callbackFlow {
+        val ref = db.collection("households").document(householdId)
+
+        val listener = ref.addSnapshotListener { snapshot, _ ->
+            val household = snapshot?.toObject(Household::class.java)
+            trySend(household)
+        }
+
+        awaitClose { listener.remove() }
     }
 
     /**

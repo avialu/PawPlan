@@ -30,6 +30,18 @@ class UserRepository {
         }
     }
 
+    suspend fun updateActiveHousehold(householdId: String?) {
+        val uid = auth.currentUser?.uid ?: return
+        val data = mapOf("activeHouseholdId" to householdId)
+        db.collection("users").document(uid).update(data).await()
+    }
+    suspend fun updatePhotoUrl(url: String) {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid)
+            .update("photoUrl", url)
+            .await()
+    }
+
     fun observeUserProfile(): Flow<User?> = callbackFlow {
         val uid = auth.currentUser?.uid
         if (uid == null) {

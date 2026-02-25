@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class AddActivityState(
+    val selectedPetId: String = "",
     val type: String = "WALK",
     val note: String = "",
+    val selectedTimestamp: Long? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
     val saved: Boolean = false
@@ -22,18 +24,47 @@ class AddActivityViewModel(
     private val _state = MutableStateFlow(AddActivityState())
     val state: StateFlow<AddActivityState> = _state
 
-    fun setType(v: String) = run { _state.value = _state.value.copy(type = v, error = null) }
-    fun setNote(v: String) = run { _state.value = _state.value.copy(note = v, error = null) }
+    fun setSelectedPetId(v: String) {
+        _state.value = _state.value.copy(selectedPetId = v, error = null)
+    }
 
-    fun save(householdId: String, petId: String) = viewModelScope.launch {
+    fun setType(v: String) {
+        _state.value = _state.value.copy(type = v, error = null)
+    }
+
+    fun setNote(v: String) {
+        _state.value = _state.value.copy(note = v, error = null)
+    }
+
+    fun setTimestamp(v: Long?) {
+        _state.value = _state.value.copy(selectedTimestamp = v, error = null)
+    }
+
+    fun initPetIfEmpty(petId: String) {
+        if (_state.value.selectedPetId.isBlank()) {
+            _state.value = _state.value.copy(selectedPetId = petId)
+        }
+    }
+
+    fun save(householdId: String, fallbackPetId: String) = viewModelScope.launch {
         val s = _state.value
-        _state.value = s.copy(isLoading = true, error = null)
+        val petId = s.selectedPetId.ifBlank { fallbackPetId }
+
+        _state.value = s.copy(isLoading = true, error = null, saved = false)
 
         try {
-            repo.addActivity(householdId, petId, s.type, s.note)
+            repo.addActivity(
+                householdId = householdId,
+                petId = petId,
+                type = s.type,
+                note = s.note,
+                timestamp = s.selectedTimestamp ?: System.currentTimeMillis()
+            )
+
             _state.value = _state.value.copy(isLoading = false, saved = true)
         } catch (e: Exception) {
-            _state.value = _state.value.copy(isLoading = false, error = e.message ?: "Save failed")
+            _state.value =
+                _state.value.copy(isLoading = false, error = e.message ?: "Save failed")
         }
     }
 }
