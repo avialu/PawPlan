@@ -45,7 +45,7 @@ fun OnboardingScreen(
                     Column(Modifier.padding(16.dp)) {
                         Text("Household created ✅", style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
-                        Text("Join code:", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Join code: (keep this code for others members to join)", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(code, style = MaterialTheme.typography.headlineSmall)
                         Spacer(Modifier.height(16.dp))
 
