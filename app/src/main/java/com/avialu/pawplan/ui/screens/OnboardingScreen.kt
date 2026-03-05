@@ -1,16 +1,18 @@
 package com.avialu.pawplan.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.avialu.pawplan.ui.components.AppScaffold
 import com.avialu.pawplan.ui.navigation.Routes
 import com.avialu.pawplan.ui.viewmodel.OnboardingViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OnboardingScreen(
     navController: NavController,
@@ -18,22 +20,18 @@ fun OnboardingScreen(
 ) {
     val state by vm.state.collectAsState()
 
-    // אם כבר יש joinCode שנוצר -> נציג “success card”
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Household") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) { Text("←") }
-                }
-            )
-        }
+    AppScaffold(
+        title = "Household",
+        onBack = { navController.popBackStack() }
     ) { padding ->
+
+        val scrollState = rememberScrollState()
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(scrollState)
                 .padding(16.dp)
         ) {
 
@@ -45,7 +43,10 @@ fun OnboardingScreen(
                     Column(Modifier.padding(16.dp)) {
                         Text("Household created ✅", style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
-                        Text("Join code: (keep this code for others members to join)", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Join code: (keep this code for other members to join)",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Text(code, style = MaterialTheme.typography.headlineSmall)
                         Spacer(Modifier.height(16.dp))
 
@@ -88,7 +89,6 @@ fun OnboardingScreen(
             }
 
             Spacer(Modifier.height(20.dp))
-            Divider()
             Spacer(Modifier.height(20.dp))
 
             // ---- Join ----
@@ -123,6 +123,8 @@ fun OnboardingScreen(
                 Spacer(Modifier.height(12.dp))
                 Text(it, color = MaterialTheme.colorScheme.error)
             }
+
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

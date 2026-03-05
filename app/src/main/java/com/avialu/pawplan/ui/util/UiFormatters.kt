@@ -7,9 +7,15 @@ import java.util.Date
 import java.util.Locale
 
 fun formatWhen(ts: Long): String {
+    val fmt = SimpleDateFormat("dd/MM", Locale.getDefault())
+    return fmt.format(Date(ts))
+}
+
+fun formatWhenHour(ts: Long): String {
     val fmt = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
     return fmt.format(Date(ts))
 }
+
 
 fun formatActivityType(type: String): String {
     val t = ActivityType.entries.firstOrNull { it.name == type }
@@ -30,12 +36,20 @@ fun addMonths(ts: Long, months: Int): Long {
     return cal.timeInMillis
 }
 
-fun nextVaccinationAt(pet: com.avialu.pawplan.data.models.Pet, now: Long): Long {
-    val base = pet.lastVaccinationAt ?: now
-    return addMonths(base, 3)
+fun startOfDay(ts: Long): Long {
+    val cal = Calendar.getInstance()
+    cal.timeInMillis = ts
+    cal.set(Calendar.HOUR_OF_DAY, 0)
+    cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+    return cal.timeInMillis
 }
 
-fun nextGroomingAt(pet: com.avialu.pawplan.data.models.Pet, now: Long): Long {
-    val base = pet.lastGroomingAt ?: now
-    return addMonths(base, 4)
+fun petTypeIcon(type: String): String = when (type.lowercase()) {
+    "dog" -> "🐶"
+    "cat" -> "🐱"
+    "rabbit" -> "🐰"
+    else -> "🐾"
 }
+

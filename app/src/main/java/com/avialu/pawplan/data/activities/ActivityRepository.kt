@@ -32,7 +32,6 @@ class ActivityRepository {
             }
         awaitClose { reg.remove() }
     }
-
     suspend fun addActivity(
         householdId: String,
         petId: String,
@@ -42,7 +41,17 @@ class ActivityRepository {
     ) {
         val currentUser = auth.currentUser ?: error("Not logged in")
         val uid = currentUser.uid
-        val userName = currentUser.displayName ?: "Unknown"
+
+        // ✅ מקור אמת לשם: users/{uid}.displayName
+        val userSnap = db.collection("users").document(uid).get().await()
+        val userNameFromDb = userSnap.getString("displayName")?.trim()
+
+        // fallbackים סבירים (לא אמור לקרות אם נחייב שם בהרשמה)
+        val userName = userNameFromDb
+            ?.takeIf { it.isNotBlank() }
+            ?: currentUser.displayName?.trim()
+            ?: currentUser.email?.substringBefore("@")
+            ?: "Unknown"
 
         val petRef = db.collection("households").document(householdId)
             .collection("pets").document(petId)
@@ -50,7 +59,6 @@ class ActivityRepository {
         val petSnap = petRef.get().await()
 
         val activityRef = activitiesRef(householdId, petId).document()
-
         val cleanNote = note?.trim()?.takeIf { it.isNotBlank() }
 
         val activityData = mapOf(
@@ -59,7 +67,7 @@ class ActivityRepository {
             "note" to cleanNote,
             "timestamp" to timestamp,
             "createdBy" to uid,
-            "createdByName" to userName,
+            "createdByName" to userName, // ✅ נשמר בפועל
             "createdAt" to FieldValue.serverTimestamp()
         )
 
@@ -70,9 +78,7 @@ class ActivityRepository {
 
         val walkUpdate = if (type == ActivityType.WALK.name) {
             val newCount =
-                if (existingDayStart != null && existingDayStart == dayStart)
-                    existingCount + 1
-                else 1
+                if (existingDayStart != null && existingDayStart == dayStart) existingCount + 1 else 1
 
             mapOf(
                 "lastWalkAt" to timestamp,

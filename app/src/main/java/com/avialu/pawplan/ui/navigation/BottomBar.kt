@@ -1,6 +1,8 @@
 package com.avialu.pawplan.ui.navigation
 
-import androidx.compose.material3.*
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -23,7 +25,10 @@ fun BottomBar(navController: NavController) {
                 selected = currentRoute == route,
                 onClick = {
                     navController.navigate(route) {
-                        popUpTo(MainRoutes.HOME)
+                        // ✅ behaves like "back" in the sense of clearing nested screens
+                        popUpTo(navController.graph.startDestinationId) {
+                            inclusive = false
+                        }
                         launchSingleTop = true
                     }
                 },

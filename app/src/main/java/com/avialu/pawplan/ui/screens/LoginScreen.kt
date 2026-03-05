@@ -47,11 +47,7 @@ fun LoginScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Login") },
-                navigationIcon = {
-                    // אם הגעת לכאן אחרי Logout אין באמת לאן לחזור, אבל Back לא מזיק
-                    IconButton(onClick = { navController.popBackStack() }) { Text("←") }
-                }
+                title = { Text("Login") }
             )
         }
     ) { padding ->

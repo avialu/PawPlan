@@ -32,11 +32,18 @@ class PetsRepository {
         type: String,
         name: String,
         breed: String,
-        birthYear: Int?
+        birthYear: Int?,
+        feedsPerDay: Int = 2,
+        walksPerDay: Int = 2,
+        vaccinationEnabled: Boolean = true,
+        vaccinationEveryMonths: Int = 3,
+        groomingEnabled: Boolean = true,
+        groomingEveryMonths: Int = 4
     ) {
         val uid = auth.currentUser?.uid ?: error("Not logged in")
 
         val docRef = petsRef(householdId).document()
+
         val pet = Pet(
             id = docRef.id,
             type = type.trim().lowercase(),
@@ -44,7 +51,14 @@ class PetsRepository {
             breed = breed.trim(),
             birthYear = birthYear,
             createdAt = System.currentTimeMillis(),
-            createdBy = uid
+            createdBy = uid,
+
+            feedsPerDay = feedsPerDay.coerceIn(1, 6),
+            walksPerDay = walksPerDay.coerceIn(1, 6),
+            vaccinationEnabled = vaccinationEnabled,
+            vaccinationEveryMonths = vaccinationEveryMonths.coerceIn(1, 24),
+            groomingEnabled = groomingEnabled,
+            groomingEveryMonths = groomingEveryMonths.coerceIn(1, 24)
         )
 
         docRef.set(pet).await()
@@ -56,13 +70,26 @@ class PetsRepository {
         type: String,
         name: String,
         breed: String,
-        birthYear: Int?
+        birthYear: Int?,
+        feedsPerDay: Int = 2,
+        walksPerDay: Int = 2,
+        vaccinationEnabled: Boolean = true,
+        vaccinationEveryMonths: Int = 3,
+        groomingEnabled: Boolean = true,
+        groomingEveryMonths: Int = 4
     ) {
         val data = mapOf(
             "type" to type.trim().lowercase(),
             "name" to name.trim(),
             "breed" to breed.trim(),
-            "birthYear" to birthYear
+            "birthYear" to birthYear,
+
+            "feedsPerDay" to feedsPerDay.coerceIn(1, 6),
+            "walksPerDay" to walksPerDay.coerceIn(1, 6),
+            "vaccinationEnabled" to vaccinationEnabled,
+            "vaccinationEveryMonths" to vaccinationEveryMonths.coerceIn(1, 24),
+            "groomingEnabled" to groomingEnabled,
+            "groomingEveryMonths" to groomingEveryMonths.coerceIn(1, 24),
         )
 
         petsRef(householdId).document(petId).update(data).await()

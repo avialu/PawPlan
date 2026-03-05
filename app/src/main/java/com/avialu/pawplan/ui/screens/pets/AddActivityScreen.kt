@@ -13,15 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,13 +31,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.avialu.pawplan.data.models.ActivityType
-import com.avialu.pawplan.ui.util.formatWhen
+import com.avialu.pawplan.ui.components.AppScaffold
+import com.avialu.pawplan.ui.util.formatWhenHour
 import com.avialu.pawplan.ui.viewmodel.AddActivityViewModel
 import com.avialu.pawplan.ui.viewmodel.PetsListViewModel
 import com.avialu.pawplan.ui.viewmodel.ProfileViewModel
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddActivityScreen(
     navController: NavController,
@@ -73,7 +69,7 @@ fun AddActivityScreen(
 
     // Timestamp shown
     val shownTs = state.selectedTimestamp ?: System.currentTimeMillis()
-    val shownTsText = formatWhen(shownTs)
+    val shownTsText = formatWhenHour(shownTs)
 
     fun openDatePicker() {
         val cal = Calendar.getInstance()
@@ -116,17 +112,10 @@ fun AddActivityScreen(
         ).show()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Add Activity") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Text("←")
-                    }
-                }
-            )
-        }
+    // ✅ משתמשים ב-AppScaffold עם הכפתור אחורה שלנו
+    AppScaffold(
+        title = "Add Activity",
+        onBack = { navController.popBackStack() }
     ) { padding ->
 
         Column(
@@ -145,7 +134,7 @@ fun AddActivityScreen(
             // -------------------------
             var petExpanded by remember { mutableStateOf(false) }
 
-            val selectedPetId = state.selectedPetId?.takeIf { it.isNotBlank() } ?: petId
+            val selectedPetId = state.selectedPetId.takeIf { it.isNotBlank() } ?: petId
             val selectedPetName =
                 petsState.pets.firstOrNull { it.id == selectedPetId }?.name ?: "Select pet"
 
@@ -204,7 +193,7 @@ fun AddActivityScreen(
                         DropdownMenuItem(
                             text = { Text(t.label) },
                             onClick = {
-                                vm.setType(t.name) // WALK/VACCINATION/GROOMING/FEED/NOTE...
+                                vm.setType(t.name)
                                 typeExpanded = false
                             }
                         )

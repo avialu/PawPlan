@@ -14,8 +14,6 @@ import com.avialu.pawplan.ui.screens.main.HomeScreen
 import com.avialu.pawplan.ui.screens.main.PetsScreen
 import com.avialu.pawplan.ui.screens.main.ProfileScreen
 import com.avialu.pawplan.ui.screens.pets.AddActivityScreen
-import com.avialu.pawplan.ui.screens.pets.AddPetScreen
-import com.avialu.pawplan.ui.screens.pets.EditPetScreen
 import com.avialu.pawplan.ui.screens.pets.PetFormScreen
 import com.avialu.pawplan.ui.screens.pets.PetProfileScreen
 
