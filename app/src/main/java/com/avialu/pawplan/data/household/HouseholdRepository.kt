@@ -15,18 +15,13 @@ class HouseholdRepository {
     private val db = FirebaseProvider.firestore
 
     private fun generateJoinCode(length: Int = 6): String {
-        val chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // בלי 0/O/1/I
+        val chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
         return (1..length).map { chars[Random.nextInt(chars.length)] }.joinToString("")
     }
 
-    /**
-     * Creates household + owner member + sets users/{uid}.activeHouseholdId
-     * Returns joinCode
-     */
     suspend fun createHousehold(name: String): String {
         val uid = auth.currentUser?.uid ?: error("Not logged in")
 
-        // Find a free join code
         var joinCode: String
         while (true) {
             joinCode = generateJoinCode()
@@ -61,8 +56,6 @@ class HouseholdRepository {
         docRef.collection("members").document(uid).set(member).await()
 
         setActiveHousehold(uid, householdId)
-
-        // IMPORTANT: return the join code (so we can display it)
         return joinCode
     }
 
@@ -77,10 +70,17 @@ class HouseholdRepository {
         awaitClose { listener.remove() }
     }
 
-    /**
-     * Joins by code + creates member doc + sets users/{uid}.activeHouseholdId
-     * Returns householdId
-     */
+    fun observeUserDisplayName(uid: String): Flow<String?> = callbackFlow {
+        val ref = db.collection("users").document(uid)
+
+        val listener = ref.addSnapshotListener { snapshot, _ ->
+            val name = snapshot?.getString("displayName")
+            trySend(name)
+        }
+
+        awaitClose { listener.remove() }
+    }
+
     suspend fun joinHouseholdByCode(code: String): String {
         val uid = auth.currentUser?.uid ?: error("Not logged in")
         val joinCode = code.trim().uppercase()

@@ -8,6 +8,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.avialu.pawplan.ui.components.AppCard
+import com.avialu.pawplan.ui.components.GradientHeader
 import com.avialu.pawplan.ui.navigation.Routes
 import com.avialu.pawplan.ui.viewmodel.AuthViewModel
 
@@ -16,7 +18,6 @@ private fun isValidEmail(email: String): Boolean {
     return e.contains("@") && e.contains(".") && e.length >= 5
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -24,7 +25,6 @@ fun LoginScreen(
 ) {
     val state by vm.state.collectAsState()
 
-    // ניווט רק דרך Side-effect
     LaunchedEffect(state.isLoggedIn) {
         if (state.isLoggedIn) {
             navController.navigate(Routes.HOME) {
@@ -34,7 +34,6 @@ fun LoginScreen(
         }
     }
 
-    // local validation
     val email = state.email
     val password = state.password
     val displayName = state.displayName
@@ -44,87 +43,80 @@ fun LoginScreen(
     val signInEnabled = !state.isLoading && isValidEmail(email) && password.length >= 6
     val signUpEnabled = signInEnabled && displayName.trim().length >= 2
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Login") }
-            )
-        }
-    ) { padding ->
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        GradientHeader(
+            title = "PawPlan",
+            subtitle = "Sign in to continue"
+        )
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(padding)
+                .fillMaxSize()
                 .padding(16.dp)
         ) {
+            AppCard(modifier = Modifier.fillMaxWidth()) {
+                Text("Welcome", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(14.dp))
 
-            Text("Welcome to PawPlan", style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = vm::setEmail,
-                label = { Text("Email") },
-                isError = emailError,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                supportingText = {
-                    when {
-                        emailError -> Text("Please enter a valid email")
-                        else -> Text(" ")
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = vm::setEmail,
+                    label = { Text("Email") },
+                    isError = emailError,
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    supportingText = {
+                        if (emailError) Text("Please enter a valid email") else Text(" ")
                     }
-                }
-            )
+                )
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = vm::setPassword,
-                label = { Text("Password") },
-                isError = passwordError,
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth(),
-                supportingText = {
-                    when {
-                        passwordError -> Text("Password must be at least 6 characters")
-                        else -> Text(" ")
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = vm::setPassword,
+                    label = { Text("Password") },
+                    isError = passwordError,
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    supportingText = {
+                        if (passwordError) Text("Password must be at least 6 characters") else Text(" ")
                     }
+                )
+
+                OutlinedTextField(
+                    value = displayName,
+                    onValueChange = vm::setDisplayName,
+                    label = { Text("Display name (for sign up)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    supportingText = { Text(" ") }
+                )
+
+                state.error?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(it, color = MaterialTheme.colorScheme.error)
                 }
-            )
 
-            OutlinedTextField(
-                value = displayName,
-                onValueChange = vm::setDisplayName,
-                label = { Text("Display name (for sign up)") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                supportingText = { Text(" ") }
-            )
-
-            state.error?.let {
                 Spacer(Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.error)
-            }
 
-            Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = vm::signIn,
+                    enabled = signInEnabled,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (state.isLoading) "Signing in..." else "Sign In")
+                }
 
-            Button(
-                onClick = vm::signIn,
-                enabled = signInEnabled,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (state.isLoading) "Signing in..." else "Sign In")
-            }
+                Spacer(Modifier.height(10.dp))
 
-            Spacer(Modifier.height(10.dp))
-
-            OutlinedButton(
-                onClick = vm::signUp,
-                enabled = signUpEnabled,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (state.isLoading) "Signing up..." else "Sign Up")
+                OutlinedButton(
+                    onClick = vm::signUp,
+                    enabled = signUpEnabled,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (state.isLoading) "Signing up..." else "Sign Up")
+                }
             }
         }
     }

@@ -6,5 +6,10 @@ data class PetActivity(
     val note: String? = null,
     val timestamp: Long = 0L,
     val createdBy: String = "",
-    val createdByName: String? = null, // ✅ add this
+    val createdByName: String? = null,
+
+    // 🔥 חדש
+    val householdId: String = "",
+    val petId: String = "",
+    val petName: String = ""
 )

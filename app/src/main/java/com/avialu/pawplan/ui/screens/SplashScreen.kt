@@ -1,7 +1,13 @@
 package com.avialu.pawplan.ui.screens
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.avialu.pawplan.data.firebase.FirebaseProvider
@@ -18,8 +24,8 @@ fun SplashScreen(
     LaunchedEffect(FirebaseProvider.auth.currentUser, user) {
         val dest = when {
             FirebaseProvider.auth.currentUser == null -> Routes.LOGIN
-            user == null -> null // עדיין טוענים פרופיל
-            else -> Routes.HOME // ✅ תמיד נכנסים ל-Main, גם בלי household
+            user == null -> null
+            else -> Routes.HOME
         }
 
         if (dest != null) {
@@ -30,5 +36,14 @@ fun SplashScreen(
         }
     }
 
-    Text("Loading...")
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator()
+            Spacer(Modifier.height(12.dp))
+            Text("Loading...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
 }

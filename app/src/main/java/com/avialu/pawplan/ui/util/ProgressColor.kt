@@ -5,11 +5,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun progressColor(done: Int, target: Int): Color {
-    if (target <= 0) return MaterialTheme.colorScheme.onSurfaceVariant
+fun progressColor(current: Int, target: Int): Color {
+
+    val t = target.coerceAtLeast(1)
+
     return when {
-        done <= 0 -> MaterialTheme.colorScheme.error
-        done < target -> Color(0xFFFFC107) // amber
-        else -> Color(0xFF2E7D32)          // green
+        current >= t -> Color(0xFF2E7D32)   // green
+        current > 0  -> Color(0xFFF9A825)   // yellow
+        else         -> Color(0xFFC62828)   // red
     }
 }

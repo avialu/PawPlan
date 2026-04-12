@@ -32,6 +32,22 @@ class ActivityRepository {
             }
         awaitClose { reg.remove() }
     }
+
+    // ✅ היסטוריה של משתמש
+    fun observeUserActivities(householdId: String, uid: String): Flow<List<PetActivity>> = callbackFlow {
+        val reg = db.collectionGroup("activities")
+            .whereEqualTo("householdId", householdId)
+            .whereEqualTo("createdBy", uid)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snap, _ ->
+                val list = snap?.documents?.mapNotNull { doc ->
+                    doc.toObject(PetActivity::class.java)?.copy(id = doc.id)
+                } ?: emptyList()
+                trySend(list)
+            }
+        awaitClose { reg.remove() }
+    }
+
     suspend fun addActivity(
         householdId: String,
         petId: String,
@@ -42,14 +58,9 @@ class ActivityRepository {
         val currentUser = auth.currentUser ?: error("Not logged in")
         val uid = currentUser.uid
 
-        // ✅ מקור אמת לשם: users/{uid}.displayName
         val userSnap = db.collection("users").document(uid).get().await()
-        val userNameFromDb = userSnap.getString("displayName")?.trim()
-
-        // fallbackים סבירים (לא אמור לקרות אם נחייב שם בהרשמה)
-        val userName = userNameFromDb
-            ?.takeIf { it.isNotBlank() }
-            ?: currentUser.displayName?.trim()
+        val userName = userSnap.getString("displayName")?.trim()
+            ?: currentUser.displayName
             ?: currentUser.email?.substringBefore("@")
             ?: "Unknown"
 
@@ -57,28 +68,33 @@ class ActivityRepository {
             .collection("pets").document(petId)
 
         val petSnap = petRef.get().await()
+        val petName = petSnap.getString("name") ?: "Pet"
 
         val activityRef = activitiesRef(householdId, petId).document()
-        val cleanNote = note?.trim()?.takeIf { it.isNotBlank() }
 
         val activityData = mapOf(
             "id" to activityRef.id,
             "type" to type,
-            "note" to cleanNote,
+            "note" to note?.trim(),
             "timestamp" to timestamp,
             "createdBy" to uid,
-            "createdByName" to userName, // ✅ נשמר בפועל
+            "createdByName" to userName,
+            "householdId" to householdId,
+            "petId" to petId,
+            "petName" to petName,
             "createdAt" to FieldValue.serverTimestamp()
         )
 
         val dayStart = startOfDay(timestamp)
 
-        val existingDayStart = petSnap.getLong("walkCountDayStart")
-        val existingCount = (petSnap.getLong("walkCountToday") ?: 0L).toInt()
-
+        // ---------------- WALK ----------------
         val walkUpdate = if (type == ActivityType.WALK.name) {
+            val existingDayStart = petSnap.getLong("walkCountDayStart")
+            val existingCount = (petSnap.getLong("walkCountToday") ?: 0L).toInt()
+
             val newCount =
-                if (existingDayStart != null && existingDayStart == dayStart) existingCount + 1 else 1
+                if (existingDayStart != null && existingDayStart == dayStart) existingCount + 1
+                else 1
 
             mapOf(
                 "lastWalkAt" to timestamp,
@@ -88,10 +104,20 @@ class ActivityRepository {
             )
         } else emptyMap()
 
+        // ---------------- FEED ----------------
         val feedUpdate = if (type == ActivityType.FEED.name) {
+            val existingDayStart = petSnap.getLong("feedCountDayStart")
+            val existingCount = (petSnap.getLong("feedCountToday") ?: 0L).toInt()
+
+            val newCount =
+                if (existingDayStart != null && existingDayStart == dayStart) existingCount + 1
+                else 1
+
             mapOf(
                 "lastFeedAt" to timestamp,
-                "lastFeedByName" to userName
+                "lastFeedByName" to userName,
+                "feedCountDayStart" to dayStart,
+                "feedCountToday" to newCount
             )
         } else emptyMap()
 
